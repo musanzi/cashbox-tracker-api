@@ -1,15 +1,15 @@
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { forgotPasswordDto } from './dto/forgot-password.dto';
-import { BadRequestException, Injectable, Req, Res } from '@nestjs/common';
+import { BadRequestException, Injectable, Req } from '@nestjs/common';
 import UpdateProfileDto from './dto/update-profile.dto';
 import * as bcrypt from 'bcrypt';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { User } from '../users/entities/user.entity';
-import { UsersService } from '../users/services/users.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
@@ -31,10 +31,6 @@ export class AuthService {
     } catch {
       throw new BadRequestException('Les identifiants saisis sont invalides');
     }
-  }
-
-  async signInWithGoogle(@Res() res: Response): Promise<void> {
-    return res.redirect(this._frontEndUrl);
   }
 
   async signIn(@Req() req: Request): Promise<{ data: Express.User }> {

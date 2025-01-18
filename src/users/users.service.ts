@@ -1,36 +1,20 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs-extra';
-import { In, IsNull, Not, Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SignupDto, CreateWithGoogleDto } from '../../auth/dto';
-import UpdateProfileDto from '../../auth/dto/update-profile.dto';
-import { CreateDetailsDto } from '../dto/create-detail.dto';
-import CreateUserDto from '../dto/create-user.dto';
-import { UpdateUserDto } from '../dto/update-user.dto';
-import { Role } from '../entities/role.entity';
-import { User } from '../entities/user.entity';
-import { RolesService } from './roles.service';
+import UpdateProfileDto from '../auth/dto/update-profile.dto';
+import CreateUserDto from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './entities/user.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { DetailsService } from './details.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    private rolesService: RolesService,
-    private detailsService: DetailsService,
     private eventEmitter: EventEmitter2
   ) {}
-
-  private async findWithRole(name: string): Promise<{ data: User[] }> {
-    const data = await this.userRepository.find({
-      select: ['id', 'name', 'email', 'profile', 'google_image', 'address', 'phone_number'],
-      relations: ['roles', 'detail'],
-      where: { roles: { name } }
-    });
-    return { data };
-  }
 
   async findAll(): Promise<{ data: User[] }> {
     const data = await this.userRepository.find({
@@ -39,54 +23,19 @@ export class UsersService {
     return { data };
   }
 
-  async findCoachs(): Promise<{ data: User[] }> {
-    return this.findWithRole('coach');
-  }
-
-  async findStaff(): Promise<{ data: User[] }> {
-    return this.findWithRole('staff');
-  }
-
-  async findUsers(): Promise<{ data: User[] }> {
-    return this.findWithRole('user');
-  }
-
-  async findAdmins(): Promise<{ data: User[] }> {
-    return this.findWithRole('admin');
-  }
-
   async create(dto: CreateUserDto): Promise<{ data: User; password: string }> {
     try {
       const password = Math.floor(100000 + Math.random() * 900000).toString();
       const data: User = await this.userRepository.save({
         ...dto,
         password,
-        verified_at: new Date(),
-        roles: dto.roles?.map((id) => ({ id }))
+        verified_at: new Date()
       });
       this.eventEmitter.emit('user.created', { user: data, password });
       return { data, password };
     } catch {
       throw new BadRequestException("Erreur lors de la création de l'utilisateur");
     }
-  }
-
-  async findByRole(id: string): Promise<{ data: User[] }> {
-    try {
-      const data = await this.userRepository.find({
-        where: { roles: { id } }
-      });
-      return { data };
-    } catch {
-      throw new BadRequestException("Erreur lors de la création de l'utilisateur");
-    }
-  }
-
-  async findByIds(ids: string[]): Promise<{ data: User[] }> {
-    const data = await this.userRepository.findBy({
-      id: In(ids)
-    });
-    return { data };
   }
 
   async verifyEmail(email: string): Promise<{ data: User }> {
@@ -108,37 +57,7 @@ export class UsersService {
       where: { email, verified_at: Not(IsNull()) },
       relations: ['roles', 'detail', 'ventures']
     });
-    const roles = data.roles.map((role) => role.name);
-    const user = { ...data, roles } as unknown as User;
-    return { data: user };
-  }
-
-  async signUp(dto: SignupDto): Promise<{ data: User }> {
-    try {
-      const { data: userRole } = await this.rolesService.findByName('user');
-      delete dto.password_confirm;
-      const data: User = await this.userRepository.save({
-        ...dto,
-        roles: [userRole]
-      });
-      return { data };
-    } catch {
-      throw new BadRequestException('Cette adresse email est déjà utilisée');
-    }
-  }
-
-  async addDetail(currentUser: User, dto: CreateDetailsDto): Promise<{ data: User }> {
-    try {
-      const { data: user } = await this.findOne(currentUser.id);
-      delete user.password;
-      const userDetail = { ...user.detail, ...dto };
-      const { data: detail } = await this.detailsService.addDetail(userDetail);
-      await this.userRepository.save({ ...user, detail });
-      const { data } = await this.getVerifiedUser(user.email);
-      return { data };
-    } catch {
-      throw new BadRequestException('Une erreur est survenue sur le serveur');
-    }
+    return { data };
   }
 
   async findOne(id: string): Promise<{ data: User }> {
@@ -162,46 +81,12 @@ export class UsersService {
     }
   }
 
-  async findOrCreate(dto: CreateWithGoogleDto): Promise<{ data: User }> {
-    try {
-      const { data: userRole } = await this.rolesService.findByName('user');
-      const user = await this.userRepository.findOne({
-        where: { email: dto.email }
-      });
-      if (user) return await this.#updateExistingUser(user, dto);
-      return await this.#createNewUser(dto, userRole);
-    } catch {
-      throw new BadRequestException("Erreur lors de la récupération de l'utilisateur");
-    }
-  }
-
-  async #updateExistingUser(user: User, dto: CreateWithGoogleDto): Promise<{ data: User }> {
-    if (!user.profile) {
-      user.google_image = dto.google_image;
-      user.verified_at = new Date();
-      await this.userRepository.save(user);
-    }
-    const { data } = await this.getVerifiedUser(user.email);
-    return { data };
-  }
-
-  async #createNewUser(dto: CreateWithGoogleDto, userRole: Role): Promise<{ data: User }> {
-    const newUser = await this.userRepository.save({
-      ...dto,
-      verified_at: new Date(),
-      roles: [userRole]
-    });
-    const { data } = await this.getVerifiedUser(newUser.email);
-    return { data };
-  }
-
   async update(id: string, dto: UpdateUserDto): Promise<{ data: User }> {
     try {
       const { data: user } = await this.findOne(id);
       const data: User = await this.userRepository.save({
         ...user,
-        ...dto,
-        roles: dto.roles?.map((id) => ({ id })) || user.roles
+        ...dto
       });
       return { data };
     } catch {

@@ -2,23 +2,20 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInt
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
-import { UpdateUserDto } from '../dto/update-user.dto';
-import { User } from '../entities/user.entity';
-import { CreateDetailsDto } from '../dto/create-detail.dto';
-import { Authorization } from '../../shared/decorators/rights.decorators';
-import { CurrentUser } from '../../shared/decorators/user.decorator';
-import { RoleEnum } from '../../shared/enums/roles.enum';
-import { UsersService } from '../services/users.service';
-import CreateUserDto from '../dto/create-user.dto';
-
+import { Authorization } from '../shared/decorators/rights.decorators';
+import { CurrentUser } from '../shared/decorators/user.decorator';
+import { RoleEnum } from '../shared/enums/roles.enum';
+import CreateUserDto from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './entities/user.entity';
+import { UsersService } from './users.service';
 
 @Controller('users')
-@Authorization(RoleEnum.Staff)
+@Authorization(RoleEnum.Manager)
 export class UsersController {
   constructor(private userService: UsersService) {}
 
   @Post('')
-  @Authorization(RoleEnum.Staff)
   addUser(@Body() dto: CreateUserDto): Promise<{ data: User }> {
     return this.userService.create(dto);
   }
@@ -26,34 +23,6 @@ export class UsersController {
   @Get('')
   findAll(): Promise<{ data: User[] }> {
     return this.userService.findAll();
-  }
-
-  @Post('add-details')
-  @Authorization(RoleEnum.User)
-  addDetail(@CurrentUser() user: User, @Body() dto: CreateDetailsDto): Promise<{ data: User }> {
-    return this.userService.addDetail(user, dto);
-  }
-
-  @Get('coachs')
-  @Authorization(RoleEnum.Guest)
-  findCoachs(): Promise<{ data: User[] }> {
-    return this.userService.findCoachs();
-  }
-
-  @Get('staff')
-  @Authorization(RoleEnum.Guest)
-  findStaff(): Promise<{ data: User[] }> {
-    return this.userService.findStaff();
-  }
-
-  @Get('admins')
-  findAdmins(): Promise<{ data: User[] }> {
-    return this.userService.findAdmins();
-  }
-
-  @Get('users')
-  findUsers(): Promise<{ data: User[] }> {
-    return this.userService.findUsers();
   }
 
   @Get(':id')
