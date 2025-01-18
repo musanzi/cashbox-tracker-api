@@ -1,5 +1,6 @@
 import { Column, Entity } from 'typeorm';
 import { AbstractEntity } from '../../shared/utils/abstract.entity';
+import { RoleEnum } from '../../shared/enums/roles.enum';
 
 @Entity()
 export class User extends AbstractEntity {
@@ -9,15 +10,15 @@ export class User extends AbstractEntity {
   @Column()
   name: string;
 
-  @Column({ nullable: true })
+  @Column()
   password: string;
 
-  @Column({ nullable: true })
+  @Column()
   phone_number: string;
+
+  @Column({ type: 'enum', enum: RoleEnum })
+  role: RoleEnum;
 
   @Column({ nullable: true })
   profile: string;
-
-  @Column({ type: 'datetime', nullable: true, default: null })
-  verified_at: Date;
 }

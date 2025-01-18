@@ -14,7 +14,6 @@ import { UsersService } from '../users/users.service';
 @Injectable()
 export class AuthService {
   private _jwtSecret = this.configService.get('JWT_SECRET');
-  private _frontEndUrl = this.configService.get('FRONTEND_URI');
 
   constructor(
     private usersService: UsersService,
@@ -25,7 +24,7 @@ export class AuthService {
 
   async validateUser(email: string, pass: string): Promise<{ data: User }> {
     try {
-      const { data } = await this.usersService.getVerifiedUser(email);
+      const { data } = await this.usersService.findByEmail(email);
       await this.verifyPassword(pass, data.password);
       return { data };
     } catch {
@@ -65,7 +64,7 @@ export class AuthService {
 
   async profile(user: User): Promise<{ data: User }> {
     try {
-      const { data } = await this.usersService.getVerifiedUser(user.email);
+      const { data } = await this.usersService.findByEmail(user.email);
       return { data };
     } catch {
       throw new BadRequestException('Erreur lors de la récupération du profil');
@@ -79,7 +78,7 @@ export class AuthService {
   async updatePassword(user: User, dto: UpdatePasswordDto): Promise<{ data: User }> {
     try {
       await this.usersService.updatePassword(user.id, dto.password);
-      const { data } = await this.usersService.getVerifiedUser(user.email);
+      const { data } = await this.usersService.findByEmail(user.email);
       return { data };
     } catch {
       throw new BadRequestException('Erreur lors de la mise à jour du mot de passe');

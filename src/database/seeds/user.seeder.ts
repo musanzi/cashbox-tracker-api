@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { faker } from '@faker-js/faker';
 import { User } from '../../users/entities/user.entity';
-import { Role } from '../../users/entities/role.entity';
+import { RoleEnum } from '../../shared/enums/roles.enum';
 
 export default class UserSeeder implements Seeder {
   async run(dataSource: DataSource) {
@@ -20,11 +20,6 @@ export default class UserSeeder implements Seeder {
      * Get repositories
      */
     const userRepository = dataSource.getRepository(User);
-    const roleRepository = dataSource.getRepository(Role);
-
-    ['admin', 'user', 'staff', 'coach'].map(async (role) => {
-      await roleRepository.save({ name: role });
-    });
 
     await userRepository.save({
       name: faker.person.firstName(),
@@ -33,7 +28,7 @@ export default class UserSeeder implements Seeder {
       email: 'admin@admin.com',
       verified_at: faker.date.recent(),
       password: await bcrypt.hash('admin1234', 10),
-      roles: [await roleRepository.findOneByOrFail({ name: 'admin' })]
+      role: RoleEnum.Admin
     });
   }
 }

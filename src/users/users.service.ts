@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs-extra';
-import { IsNull, Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import UpdateProfileDto from '../auth/dto/update-profile.dto';
 import CreateUserDto from './dto/create-user.dto';
@@ -17,9 +17,7 @@ export class UsersService {
   ) {}
 
   async findAll(): Promise<{ data: User[] }> {
-    const data = await this.userRepository.find({
-      relations: ['roles']
-    });
+    const data = await this.userRepository.find({});
     return { data };
   }
 
@@ -38,33 +36,10 @@ export class UsersService {
     }
   }
 
-  async verifyEmail(email: string): Promise<{ data: User }> {
-    try {
-      const { data: user } = await this.findByEmail(email);
-      delete user.password;
-      const data = await this.userRepository.save({
-        ...user,
-        verified_at: new Date()
-      });
-      return { data };
-    } catch {
-      throw new BadRequestException("Erreur lors de la vérification de l'email");
-    }
-  }
-
-  async getVerifiedUser(email: string): Promise<{ data: User }> {
-    const data = await this.userRepository.findOneOrFail({
-      where: { email, verified_at: Not(IsNull()) },
-      relations: ['roles', 'detail', 'ventures']
-    });
-    return { data };
-  }
-
   async findOne(id: string): Promise<{ data: User }> {
     try {
       const data: User = await this.userRepository.findOneOrFail({
-        where: { id },
-        relations: ['roles', 'detail']
+        where: { id }
       });
       return { data };
     } catch {
@@ -74,7 +49,7 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<{ data: User }> {
     try {
-      const data: User = await this.userRepository.findOneOrFail({ where: { email }, relations: ['roles'] });
+      const data: User = await this.userRepository.findOneOrFail({ where: { email } });
       return { data };
     } catch {
       throw new NotFoundException('Aucun utilisateur trouvé');
@@ -99,7 +74,7 @@ export class UsersService {
       const { data: user } = await this.findOne(currentUser.id);
       delete user.password;
       await this.userRepository.save({ ...user, ...dto });
-      const { data } = await this.getVerifiedUser(user.email);
+      const { data } = await this.findOne(user.id);
       return { data };
     } catch {
       throw new BadRequestException('Erreur lors de la modification du profil');
@@ -112,7 +87,7 @@ export class UsersService {
       if (user.profile) await fs.unlink(`./uploads/profiles/${user.profile}`);
       delete user.password;
       await this.userRepository.save({ ...user, profile: file.filename });
-      const { data } = await this.getVerifiedUser(user.email);
+      const { data } = await this.findOne(user.id);
       return { data };
     } catch {
       throw new BadRequestException("Erreur lors de la mise à jour de l'image");
