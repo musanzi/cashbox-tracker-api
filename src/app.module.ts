@@ -10,6 +10,9 @@ import { AuthorizationGuard } from './auth/guards/authorization.guard';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { CashboxesModule } from './cashboxes/cashboxes.module';
+import { TransactionsModule } from './transactions/transactions.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -48,7 +51,10 @@ import { MailerModule } from '@nestjs-modules/mailer';
     }),
     AuthModule,
     UsersModule,
-    DatabaseModule
+    DatabaseModule,
+    CashboxesModule,
+    TransactionsModule,
+    ReportsModule
   ],
   providers: [{ provide: APP_GUARD, useClass: AuthorizationGuard }]
 })
