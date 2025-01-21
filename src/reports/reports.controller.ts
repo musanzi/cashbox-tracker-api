@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Delete, Post } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import { Report } from './entities/report.entity';
 import { Authorization } from '../shared/decorators/rights.decorators';
@@ -8,6 +8,11 @@ import { RoleEnum } from '../shared/enums/roles.enum';
 @Authorization(RoleEnum.Manager)
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
+
+  @Post('generate')
+  generateReport(): Promise<{ data: Report }> {
+    return this.reportsService.generateReport();
+  }
 
   @Get()
   findAll(): Promise<{ data: Report[] }> {
