@@ -34,7 +34,7 @@ export class TransactionsService {
   }
 
   async findAll(queryParams: QueryParams): Promise<{ data: Transaction[] }> {
-    const { page, fromCashBox, toCashBox } = queryParams;
+    const { page, fromCashbox, toCashbox } = queryParams;
     const query = this.transactionsRepository
       .createQueryBuilder('t')
       .leftJoinAndSelect('t.from', 'from')
@@ -42,8 +42,8 @@ export class TransactionsService {
       .leftJoinAndSelect('t.by', 'by');
     const take: number = 12;
     const skip = ((page || 1) - 1) * take;
-    if (fromCashBox) query.where('from.id = :fromCashBox = :fromCashBox', { fromCashBox });
-    if (toCashBox) query.where('to.id = :toCashBox = :toCashBox', { toCashBox });
+    if (fromCashbox) query.where('from.id = :fromCashbox = :fromCashbox', { fromCashbox });
+    if (toCashbox) query.where('to.id = :toCashbox = :toCashbox', { toCashbox });
     const data = await query.take(take).skip(skip).getMany();
     return { data };
   }
