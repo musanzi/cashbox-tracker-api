@@ -6,110 +6,94 @@ import UpdateProfileDto from '../auth/dto/update-profile.dto';
 import CreateUserDto from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
-    private eventEmitter: EventEmitter2
+    private usersRepository: Repository<User>
   ) {}
 
-  async findAll(): Promise<{ data: User[] }> {
-    const data = await this.userRepository.find({});
-    return { data };
-  }
-
-  async create(dto: CreateUserDto): Promise<{ data: User; password: string }> {
+  async create(dto: CreateUserDto): Promise<{ data: User }> {
     try {
       const password = Math.floor(100000 + Math.random() * 900000).toString();
-      const data: User = await this.userRepository.save({
-        ...dto,
-        password,
-        verified_at: new Date()
-      });
-      this.eventEmitter.emit('user.created', { user: data, password });
-      return { data, password };
+      const data = await this.usersRepository.save({ ...dto, password });
+      return { data };
     } catch {
-      throw new BadRequestException("Erreur lors de la création de l'utilisateur");
+      throw new BadRequestException();
     }
+  }
+
+  async findAll(): Promise<{ data: User[] }> {
+    const data = await this.usersRepository.find({});
+    return { data };
   }
 
   async findOne(id: string): Promise<{ data: User }> {
     try {
-      const data: User = await this.userRepository.findOneOrFail({
-        where: { id }
-      });
+      const data: User = await this.usersRepository.findOneOrFail({ where: { id } });
       return { data };
     } catch {
-      throw new BadRequestException('Aucun utilisateur trouvé avec cet identifiant');
+      throw new BadRequestException();
     }
   }
 
   async findByEmail(email: string): Promise<{ data: User }> {
     try {
-      const data: User = await this.userRepository.findOneOrFail({ where: { email } });
+      const data: User = await this.usersRepository.findOneOrFail({ where: { email } });
       return { data };
     } catch {
-      throw new NotFoundException('Aucun utilisateur trouvé');
+      throw new NotFoundException();
     }
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<{ data: User }> {
     try {
-      const { data: user } = await this.findOne(id);
-      const data: User = await this.userRepository.save({
-        ...user,
-        ...dto
-      });
+      await this.usersRepository.update(id, dto);
+      const { data } = await this.findOne(id);
       return { data };
     } catch {
-      throw new BadRequestException("Erreur lors de la modification de l'utilisateur");
+      throw new BadRequestException();
     }
   }
 
-  async updateProfile(currentUser: User, dto: UpdateProfileDto): Promise<{ data: User }> {
+  async updateProfile(user: User, dto: UpdateProfileDto): Promise<{ data: User }> {
     try {
-      const { data: user } = await this.findOne(currentUser.id);
-      delete user.password;
-      await this.userRepository.save({ ...user, ...dto });
+      await this.usersRepository.update(user.id, dto);
       const { data } = await this.findOne(user.id);
       return { data };
     } catch {
-      throw new BadRequestException('Erreur lors de la modification du profil');
+      throw new BadRequestException();
     }
   }
 
-  async uploadImage(currenUser: User, file: Express.Multer.File): Promise<{ data: User }> {
+  async uploadImage(user: User, file: Express.Multer.File): Promise<{ data: User }> {
     try {
-      const { data: user } = await this.findOne(currenUser.id);
       if (user.profile) await fs.unlink(`./uploads/profiles/${user.profile}`);
-      delete user.password;
-      await this.userRepository.save({ ...user, profile: file.filename });
+      await this.usersRepository.update(user.id, { profile: file.filename });
       const { data } = await this.findOne(user.id);
       return { data };
     } catch {
-      throw new BadRequestException("Erreur lors de la mise à jour de l'image");
+      throw new BadRequestException();
     }
   }
 
   async updatePassword(id: string, password: string): Promise<{ data: User }> {
     try {
       const { data } = await this.findOne(id);
-      await this.userRepository.update(data.id, { password });
+      await this.usersRepository.update(data.id, { password });
       return { data };
     } catch {
-      throw new BadRequestException('Erreur lors de la réinitialisation du mot de passe');
+      throw new BadRequestException();
     }
   }
 
   async remove(id: string): Promise<void> {
     try {
       await this.findOne(id);
-      await this.userRepository.softDelete(id);
+      await this.usersRepository.softDelete(id);
     } catch {
-      throw new BadRequestException("Erreur lors de la suppression de l'utilisateur");
+      throw new BadRequestException();
     }
   }
 }

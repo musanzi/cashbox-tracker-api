@@ -16,7 +16,7 @@ export class UsersController {
   constructor(private userService: UsersService) {}
 
   @Post('')
-  addUser(@Body() dto: CreateUserDto): Promise<{ data: User }> {
+  create(@Body() dto: CreateUserDto): Promise<{ data: User }> {
     return this.userService.create(dto);
   }
 
