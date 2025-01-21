@@ -13,10 +13,12 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { CashboxesModule } from './cashboxes/cashboxes.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { ReportsModule } from './reports/reports.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: resolve(__dirname, '../../'),
       renderPath: '/uploads'
