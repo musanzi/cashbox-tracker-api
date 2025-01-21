@@ -11,5 +11,5 @@ export class Report extends AbstractEntity {
   generated_at: Date;
 
   @Column({ type: 'json' })
-  data: JSON;
+  data: object;
 }

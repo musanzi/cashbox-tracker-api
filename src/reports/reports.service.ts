@@ -1,25 +1,34 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateReportDto } from './dto/create-report.dto';
-import { UpdateReportDto } from './dto/update-report.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Report } from './entities/report.entity';
+import { CashboxesService } from '../cashboxes/cashboxes.service';
+import { ReportTypeEnum } from './utils/type.enum';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class ReportsService {
   constructor(
     @InjectRepository(Report)
-    private reportsRepository: Repository<Report>
+    private reportsRepository: Repository<Report>,
+    private cashboxesService: CashboxesService
   ) {}
 
-  async create(dto: CreateReportDto): Promise<{ data: Report }> {
-    try {
-      const report = this.reportsRepository.create(dto);
-      const data = await this.reportsRepository.save(report);
-      return { data };
-    } catch {
-      throw new BadRequestException();
-    }
+  async generateReport(type: ReportTypeEnum): Promise<{ data: Report }> {
+    const { data: cashboxes } = await this.cashboxesService.findAll();
+    const total = cashboxes.reduce((acc, cashbox) => acc + cashbox.balance, 0);
+    const report = cashboxes.map((cashbox) => ({ cashboxId: cashbox.name, balance: cashbox.balance }));
+    const data = await this.reportsRepository.save({
+      type,
+      generated_at: new Date(),
+      data: { total, report }
+    });
+    return { data };
+  }
+
+  @Cron('0 0 18 * * *')
+  async dailyReport() {
+    await this.generateReport(ReportTypeEnum.Daily);
   }
 
   async findAll(): Promise<{ data: Report[] }> {
@@ -29,16 +38,6 @@ export class ReportsService {
 
   async findOne(id: string): Promise<{ data: Report }> {
     try {
-      const data = await this.reportsRepository.findOneOrFail({ where: { id } });
-      return { data };
-    } catch {
-      throw new BadRequestException();
-    }
-  }
-
-  async update(id: string, dto: UpdateReportDto): Promise<{ data: Report }> {
-    try {
-      await this.reportsRepository.update(id, dto);
       const data = await this.reportsRepository.findOneOrFail({ where: { id } });
       return { data };
     } catch {
