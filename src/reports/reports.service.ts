@@ -5,18 +5,18 @@ import { Report } from './entities/report.entity';
 import { CashboxesService } from '../cashboxes/cashboxes.service';
 import { ReportTypeEnum } from './utils/type.enum';
 import { Cron } from '@nestjs/schedule';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+// import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ReportsService {
   constructor(
     @InjectRepository(Report)
     private reportsRepository: Repository<Report>,
-    private cashboxesService: CashboxesService,
-    private eventEmitter: EventEmitter2
+    private cashboxesService: CashboxesService
+    // private eventEmitter: EventEmitter2
   ) {}
 
-  async generateReport(type: ReportTypeEnum): Promise<{ data: Report }> {
+  async generateReport(): Promise<{ data: Report }> {
     const { data: cashboxes } = await this.cashboxesService.findAll();
     const total = cashboxes.reduce((acc, cashbox) => acc + cashbox.balance, 0);
     const report: { cashbox: string; balance: number }[] = cashboxes.map((cashbox) => ({
@@ -24,17 +24,17 @@ export class ReportsService {
       balance: cashbox.balance
     }));
     const data = await this.reportsRepository.save({
-      type,
+      type: ReportTypeEnum.Daily,
       generated_at: new Date(),
       data: { total, report }
     });
-    this.eventEmitter.emit('send-daily-report', { total, data: report });
+    // this.eventEmitter.emit('send-daily-report', { total, data: report });
     return { data };
   }
 
   @Cron('0 0 18 * * *')
   async dailyReport() {
-    await this.generateReport(ReportTypeEnum.Daily);
+    await this.generateReport();
   }
 
   async findAll(): Promise<{ data: Report[] }> {
