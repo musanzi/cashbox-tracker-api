@@ -7,21 +7,18 @@ import CreateUserDto from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { RoleEnum } from '../shared/enums/roles.enum';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
-    private eventEmitter: EventEmitter2
+    private usersRepository: Repository<User>
   ) {}
 
   async create(dto: CreateUserDto): Promise<{ data: User }> {
     try {
-      const password = Math.floor(100000 + Math.random() * 900000).toString();
+      const password = 'Mtg1234';
       const data = await this.usersRepository.save({ ...dto, password });
-      this.eventEmitter.emit('user-created', { user: data, password });
       return { data };
     } catch {
       throw new BadRequestException();
