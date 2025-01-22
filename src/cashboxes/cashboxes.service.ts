@@ -35,6 +35,16 @@ export class CashboxesService {
     }
   }
 
+  async updateBalance(id: string, balance: number): Promise<{ data: Cashbox }> {
+    try {
+      await this.cashboxesRepository.update(id, { balance });
+      const { data } = await this.findOne(id);
+      return { data };
+    } catch {
+      throw new BadRequestException();
+    }
+  }
+
   async update(id: string, dto: UpdateCashboxDto): Promise<{ data: Cashbox }> {
     try {
       await this.cashboxesRepository.update(id, dto);

@@ -3,8 +3,11 @@ import { CashboxesService } from './cashboxes.service';
 import { CreateCashboxDto } from './dto/create-cashbox.dto';
 import { UpdateCashboxDto } from './dto/update-cashbox.dto';
 import { Cashbox } from './entities/cashbox.entity';
+import { Authorization } from '../shared/decorators/rights.decorators';
+import { RoleEnum } from '../shared/enums/roles.enum';
 
 @Controller('cashboxes')
+@Authorization(RoleEnum.Manager)
 export class CashboxesController {
   constructor(private readonly cashboxesService: CashboxesService) {}
 
