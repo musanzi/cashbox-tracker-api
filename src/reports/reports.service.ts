@@ -5,7 +5,6 @@ import { Report } from './entities/report.entity';
 import { CashboxesService } from '../cashboxes/cashboxes.service';
 import { ReportTypeEnum } from './utils/type.enum';
 import { Cron } from '@nestjs/schedule';
-// import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ReportsService {
@@ -13,7 +12,6 @@ export class ReportsService {
     @InjectRepository(Report)
     private reportsRepository: Repository<Report>,
     private cashboxesService: CashboxesService
-    // private eventEmitter: EventEmitter2
   ) {}
 
   async generateReport(): Promise<{ data: Report }> {
@@ -28,7 +26,6 @@ export class ReportsService {
       generated_at: new Date(),
       data: { total, report }
     });
-    // this.eventEmitter.emit('send-daily-report', { total, data: report });
     return { data };
   }
 
