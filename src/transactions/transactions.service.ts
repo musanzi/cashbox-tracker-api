@@ -18,12 +18,7 @@ export class TransactionsService {
 
   async create(user: User, dto: CreateTransactionDto): Promise<{ data: Transaction }> {
     try {
-      const { data: fromCashbox } = await this.cashBoxsService.findOne(dto.from);
-      const { data: toCashbox } = await this.cashBoxsService.findOne(dto.to);
-      if (dto.amount > fromCashbox.balance * 0.95)
-        throw new BadRequestException('Transaction amount exceeds 95% of the cashbox balance');
-      await this.cashBoxsService.updateBalance(dto.from, fromCashbox.balance - dto.amount);
-      await this.cashBoxsService.updateBalance(dto.to, toCashbox.balance + dto.amount);
+      await this.processTransaction(dto);
       const data = await this.transactionsRepository.save({
         ...dto,
         from: { id: dto.from },
@@ -34,6 +29,14 @@ export class TransactionsService {
     } catch (e) {
       throw new BadRequestException(e);
     }
+  }
+
+  async processTransaction(dto: CreateTransactionDto): Promise<void> {
+    const { data: fromCashbox } = await this.cashBoxsService.findOne(dto.from);
+    const { data: toCashbox } = await this.cashBoxsService.findOne(dto.to);
+    if (dto.amount > fromCashbox.balance * 0.95) throw new BadRequestException('Not enough money in the cashbox');
+    await this.cashBoxsService.updateBalance(dto.from, fromCashbox.balance - dto.amount);
+    await this.cashBoxsService.updateBalance(dto.to, toCashbox.balance + dto.amount);
   }
 
   async findAll(queryParams: QueryParams): Promise<{ data: Transaction[] }> {
