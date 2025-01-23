@@ -22,10 +22,10 @@ export class AuthService {
     private configService: ConfigService
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<{ data: User }> {
+  async validateUser(email: string, password: string): Promise<{ data: User }> {
     try {
       const { data } = await this.usersService.findByEmail(email);
-      await this.verifyPassword(pass, data.password);
+      await this.verifyPassword(password, data.password);
       return { data };
     } catch {
       throw new BadRequestException('Les identifiants saisis sont invalides');

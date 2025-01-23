@@ -12,13 +12,13 @@ import { RoleEnum } from '../shared/enums/roles.enum';
 import { User } from '../users/entities/user.entity';
 
 @Controller('auth')
-@Authorization(RoleEnum.Manager)
+@Authorization(RoleEnum.User)
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('sign-in')
-  @Authorization(RoleEnum.Guest)
   @UseGuards(LocalAuthGuard)
+  @Authorization(RoleEnum.Guest)
   singIn(@Req() req: Request): Promise<{ data: Express.User }> {
     return this.authService.signIn(req);
   }
@@ -34,7 +34,6 @@ export class AuthController {
   }
 
   @Patch('profile')
-  @Authorization(RoleEnum.User)
   updateProfile(@CurrentUser() currentUser: User, @Body() data: UpdateProfileDto): Promise<{ data: User }> {
     return this.authService.updateProfile(currentUser, data);
   }
