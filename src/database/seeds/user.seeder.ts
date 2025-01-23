@@ -12,8 +12,6 @@ export default class UserSeeder implements Seeder {
      */
     await dataSource.query('SET FOREIGN_KEY_CHECKS = 0;');
     await dataSource.query('TRUNCATE TABLE user;');
-    await dataSource.query('TRUNCATE TABLE role;');
-    await dataSource.query('TRUNCATE TABLE user_roles;');
     await dataSource.query('SET FOREIGN_KEY_CHECKS = 1;');
 
     /**
