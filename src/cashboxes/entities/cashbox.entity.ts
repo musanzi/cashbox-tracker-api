@@ -10,7 +10,7 @@ export class Cashbox extends AbstractEntity {
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   balance: number;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, (user) => user.cashboxes)
   @JoinColumn()
-  user: User;
+  manager: User;
 }

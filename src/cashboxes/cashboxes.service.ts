@@ -14,7 +14,10 @@ export class CashboxesService {
 
   async create(dto: CreateCashboxDto): Promise<{ data: Cashbox }> {
     try {
-      const data = await this.cashboxesRepository.save(dto);
+      const data = await this.cashboxesRepository.save({
+        ...dto,
+        manager: { id: dto.manager }
+      });
       return { data };
     } catch {
       throw new BadRequestException();
@@ -47,7 +50,12 @@ export class CashboxesService {
 
   async update(id: string, dto: UpdateCashboxDto): Promise<{ data: Cashbox }> {
     try {
-      await this.cashboxesRepository.update(id, dto);
+      const { data: cashbox } = await this.findOne(id);
+      await this.cashboxesRepository.save({
+        ...cashbox,
+        ...dto,
+        manager: { id: dto.manager }
+      });
       const data = await this.cashboxesRepository.findOneOrFail({ where: { id } });
       return { data };
     } catch {
