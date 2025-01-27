@@ -16,8 +16,8 @@ async function bootstrap() {
   app.use(
     session({
       secret: process.env.SESSION_SECRET,
-      resave: Boolean(process.env.SESSION_RESAVE),
-      saveUninitialized: Boolean(process.env.SESSION_SAVE_UNINITIALIZED),
+      resave: false,
+      saveUninitialized: false,
       cookie: { maxAge: 86400000, secure: false, sameSite: 'strict', httpOnly: true }
     })
   );

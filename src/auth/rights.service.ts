@@ -18,15 +18,13 @@ export class RightsService {
     });
   }
 
-  private getPriority(role: RoleEnum): number {
-    const hierarchy = this.#hierarchies.find((h) => h.role === role);
-    return hierarchy ? hierarchy.priority : -1;
+  private getPriority(role: RoleEnum | null): number {
+    return role ? this.#hierarchies.find((h) => h.role === role).priority : 1;
   }
 
-  public isAuthorized({ currentRoles, requiredRole }: IAuthorizedParams): void {
+  public isAuthorized({ currentRole, requiredRole }: IAuthorizedParams): void {
     const requiredPriority = this.getPriority(requiredRole);
-    const currentPriorities = currentRoles?.map((role) => this.getPriority(role)) ?? [1];
-    const currentHighPriority = Math.max(...currentPriorities);
-    if (!(currentHighPriority >= requiredPriority)) throw new UnauthorizedException();
+    const currentPriority = this.getPriority(currentRole);
+    if (!(currentPriority >= requiredPriority)) throw new UnauthorizedException();
   }
 }

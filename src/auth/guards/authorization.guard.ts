@@ -17,7 +17,7 @@ export class AuthorizationGuard implements CanActivate {
     const req = ctx.switchToHttp().getRequest();
     const user = req.user;
     try {
-      this.rightsService.isAuthorized({ currentRoles: user?.roles, requiredRole });
+      this.rightsService.isAuthorized({ currentRole: user?.role, requiredRole });
       return true;
     } catch {
       throw new UnauthorizedException("Vous n'avez juste pas le droit !");
