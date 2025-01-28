@@ -39,7 +39,7 @@ export class TransactionsService {
     await this.cashBoxsService.updateBalance(dto.to, toCashbox.balance + dto.amount);
   }
 
-  async findAll(queryParams: QueryParams): Promise<{ total: number; data: [Transaction[], number] }> {
+  async findAll(queryParams: QueryParams): Promise<{ data: [Transaction[], number] }> {
     const BetweenDates = (from: string, to: string) => Between(new Date(from), new Date(to));
     const { page = 1, from, to } = queryParams;
     const take = 6;
@@ -51,8 +51,7 @@ export class TransactionsService {
       where: { created_at: BetweenDates(from, to) },
       order: { created_at: 'DESC' }
     });
-    const total = await this.transactionsRepository.count();
-    return { total, data };
+    return { data };
   }
 
   async findOne(id: string): Promise<{ data: Transaction }> {

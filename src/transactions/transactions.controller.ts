@@ -20,7 +20,7 @@ export class TransactionsController {
   }
 
   @Get()
-  findAll(@Query() queryParams: QueryParams): Promise<{ total: number; data: [Transaction[], number] }> {
+  findAll(@Query() queryParams: QueryParams): Promise<{ data: [Transaction[], number] }> {
     return this.transactionsService.findAll(queryParams);
   }
 
