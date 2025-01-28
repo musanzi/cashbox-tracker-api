@@ -6,6 +6,7 @@ import { User } from '../../users/entities/user.entity';
 import { RoleEnum } from '../../shared/enums/roles.enum';
 import { Cashbox } from '../../cashboxes/entities/cashbox.entity';
 import { Transaction } from '../../transactions/entities/transaction.entity';
+import { TransactionTypeEnum } from '../../transactions/utils/type.enum';
 
 export default class UserSeeder implements Seeder {
   async run(dataSource: DataSource) {
@@ -36,6 +37,7 @@ export default class UserSeeder implements Seeder {
 
     async function createTransactions(count: number, cashiers: User[]) {
       const cashboxes = await cashboxRepository.find();
+      const types = [TransactionTypeEnum.Deposit, TransactionTypeEnum.Transfer, TransactionTypeEnum.Withdrawal];
       return Promise.all(
         Array(count)
           .fill(0)
@@ -51,9 +53,9 @@ export default class UserSeeder implements Seeder {
             return await dataSource.getRepository(Transaction).save({
               amount: +faker.finance.amount(),
               from: { id: fromCashbox.id },
+              type: faker.helpers.arrayElement(types),
               to: { id: toCashbox.id },
-              by: faker.helpers.arrayElement(cashiers),
-              created_at: faker.date.recent()
+              by: faker.helpers.arrayElement(cashiers)
             });
           })
       );
