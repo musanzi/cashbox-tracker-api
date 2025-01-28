@@ -1,5 +1,5 @@
 export interface QueryParams {
   page: number | null;
-  fromCashbox: string | null;
-  toCashbox: string | null;
+  from: string | null;
+  to: string | null;
 }
