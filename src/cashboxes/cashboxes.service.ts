@@ -25,7 +25,9 @@ export class CashboxesService {
   }
 
   async findAll(): Promise<{ data: Cashbox[] }> {
-    const data = await this.cashboxesRepository.find();
+    const data = await this.cashboxesRepository.find({
+      relations: ['manager']
+    });
     return { data };
   }
 
