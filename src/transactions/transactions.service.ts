@@ -3,7 +3,7 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { CashboxesService } from '../cashboxes/cashboxes.service';
 import { User } from '../users/entities/user.entity';
 import { QueryParams } from './utils/query-params.type';
@@ -39,19 +39,20 @@ export class TransactionsService {
     await this.cashBoxsService.updateBalance(dto.to, toCashbox.balance + dto.amount);
   }
 
-  async findAll(queryParams: QueryParams): Promise<{ data: Transaction[] }> {
-    const { page, fromCashbox, toCashbox } = queryParams;
-    const query = this.transactionsRepository
-      .createQueryBuilder('t')
-      .leftJoinAndSelect('t.from', 'from')
-      .leftJoinAndSelect('t.to', 'to')
-      .leftJoinAndSelect('t.by', 'by');
-    const take: number = 12;
-    const skip = ((page || 1) - 1) * take;
-    if (fromCashbox) query.where('from.id = :fromCashbox = :fromCashbox', { fromCashbox });
-    if (toCashbox) query.where('to.id = :toCashbox = :toCashbox', { toCashbox });
-    const data = await query.take(take).skip(skip).getMany();
-    return { data };
+  async findAll(queryParams: QueryParams): Promise<{ total: number; data: [Transaction[], number] }> {
+    const BetweenDates = (from: string, to: string) => Between(new Date(from), new Date(to));
+    const { page = 1, from, to } = queryParams;
+    const take = 6;
+    const skip = (page - 1) * take;
+    const data = await this.transactionsRepository.findAndCount({
+      take,
+      skip,
+      relations: ['from', 'to', 'by'],
+      where: { created_at: BetweenDates(from, to) },
+      order: { created_at: 'DESC' }
+    });
+    const total = await this.transactionsRepository.count();
+    return { total, data };
   }
 
   async findOne(id: string): Promise<{ data: Transaction }> {
