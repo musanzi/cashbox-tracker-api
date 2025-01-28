@@ -55,7 +55,8 @@ export default class UserSeeder implements Seeder {
               from: { id: fromCashbox.id },
               type: faker.helpers.arrayElement(types),
               to: { id: toCashbox.id },
-              by: faker.helpers.arrayElement(cashiers)
+              by: faker.helpers.arrayElement(cashiers),
+              created_at: faker.date.recent()
             });
           })
       );
@@ -74,17 +75,16 @@ export default class UserSeeder implements Seeder {
     }
 
     await userRepository.save({
-      name: faker.person.firstName(),
+      name: 'Wilfried Musanzi',
       phone_number: faker.phone.number({ style: 'human' }),
       email: 'admin@admin.com',
-      password: await bcrypt.hash('admin1234', 10),
+      password: await bcrypt.hash('admin', 10),
       role: RoleEnum.Admin
     });
 
-    await createUsers(10, RoleEnum.Manager);
-    await createUsers(2, RoleEnum.Admin);
-    const users = await createUsers(5, RoleEnum.Cashier);
+    await createUsers(3, RoleEnum.Manager);
+    const users = await createUsers(6, RoleEnum.Cashier);
     await createCashbox(users);
-    await createTransactions(30, users);
+    await createTransactions(400, users);
   }
 }
