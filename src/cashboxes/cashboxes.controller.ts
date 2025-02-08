@@ -7,27 +7,27 @@ import { Authorization } from '../shared/decorators/rights.decorators';
 import { RoleEnum } from '../shared/enums/roles.enum';
 
 @Controller('cashboxes')
-@Authorization(RoleEnum.Manager)
+@Authorization(RoleEnum.Admin)
 export class CashboxesController {
   constructor(private readonly cashboxesService: CashboxesService) {}
 
   @Post()
-  create(@Body() dto: CreateCashboxDto): Promise<{ data: Cashbox }> {
+  create(@Body() dto: CreateCashboxDto): Promise<Cashbox> {
     return this.cashboxesService.create(dto);
   }
 
   @Get()
-  findAll(): Promise<{ data: Cashbox[] }> {
+  findAll(): Promise<Cashbox[]> {
     return this.cashboxesService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<{ data: Cashbox }> {
+  findOne(@Param('id') id: string): Promise<Cashbox> {
     return this.cashboxesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateCashboxDto): Promise<{ data: Cashbox }> {
+  update(@Param('id') id: string, @Body() dto: UpdateCashboxDto): Promise<Cashbox> {
     return this.cashboxesService.update(id, dto);
   }
 

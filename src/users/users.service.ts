@@ -15,80 +15,77 @@ export class UsersService {
     private usersRepository: Repository<User>
   ) {}
 
-  async create(dto: CreateUserDto): Promise<{ data: User }> {
+  async create(dto: CreateUserDto): Promise<User> {
     try {
       const password = 'Mtg1234';
       const data = await this.usersRepository.save({ ...dto, password });
-      return { data };
+      return data;
     } catch {
       throw new BadRequestException();
     }
   }
 
-  async findAll(): Promise<{ data: User[] }> {
+  async findAll(): Promise<User[]> {
     const data = await this.usersRepository.find({});
-    return { data };
+    return data;
   }
 
-  async findManagers(): Promise<{ data: User[] }> {
+  async findManagers(): Promise<User[]> {
     const data = await this.usersRepository.find({ where: { role: RoleEnum.Manager } });
-    return { data };
+    return data;
   }
 
-  async findOne(id: string): Promise<{ data: User }> {
+  async findOne(id: string): Promise<User> {
     try {
       const data: User = await this.usersRepository.findOneOrFail({ where: { id } });
-      return { data };
+      return data;
     } catch {
       throw new BadRequestException();
     }
   }
 
-  async findByEmail(email: string): Promise<{ data: User }> {
+  async findByEmail(email: string): Promise<User> {
     try {
-      const data: User = await this.usersRepository.findOneOrFail({ where: { email } });
-      return { data };
+      return await this.usersRepository.findOneOrFail({
+        where: { email }
+      });
     } catch {
       throw new NotFoundException();
     }
   }
 
-  async update(id: string, dto: UpdateUserDto): Promise<{ data: User }> {
+  async update(id: string, dto: UpdateUserDto): Promise<User> {
     try {
       await this.usersRepository.update(id, dto);
-      const { data } = await this.findOne(id);
-      return { data };
+      return await this.findOne(id);
     } catch {
       throw new BadRequestException();
     }
   }
 
-  async updateProfile(user: User, dto: UpdateProfileDto): Promise<{ data: User }> {
+  async updateProfile(user: User, dto: UpdateProfileDto): Promise<User> {
     try {
       await this.usersRepository.update(user.id, dto);
-      const { data } = await this.findOne(user.id);
-      return { data };
+      return await this.findOne(user.id);
     } catch {
       throw new BadRequestException();
     }
   }
 
-  async uploadImage(user: User, file: Express.Multer.File): Promise<{ data: User }> {
+  async uploadImage(user: User, file: Express.Multer.File): Promise<User> {
     try {
       if (user.profile) await fs.unlink(`./uploads/profiles/${user.profile}`);
       await this.usersRepository.update(user.id, { profile: file.filename });
-      const { data } = await this.findOne(user.id);
-      return { data };
+      return await this.findOne(user.id);
     } catch {
       throw new BadRequestException();
     }
   }
 
-  async updatePassword(id: string, password: string): Promise<{ data: User }> {
+  async updatePassword(id: string, password: string): Promise<User> {
     try {
-      const { data } = await this.findOne(id);
-      await this.usersRepository.update(data.id, { password });
-      return { data };
+      await this.usersRepository.update(id, { password });
+      return await this.findOne(id);
     } catch {
       throw new BadRequestException();
     }

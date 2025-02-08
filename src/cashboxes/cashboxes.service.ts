@@ -12,54 +12,64 @@ export class CashboxesService {
     private cashboxesRepository: Repository<Cashbox>
   ) {}
 
-  async create(dto: CreateCashboxDto): Promise<{ data: Cashbox }> {
+  async create(dto: CreateCashboxDto): Promise<Cashbox> {
     try {
       const data = await this.cashboxesRepository.save({
         ...dto,
         manager: { id: dto.manager }
       });
-      return { data };
+      return data;
     } catch {
       throw new BadRequestException();
     }
   }
 
-  async findAll(): Promise<{ data: Cashbox[] }> {
+  async getCashBoxByManager(managerId: string): Promise<Cashbox> {
+    try {
+      return await this.cashboxesRepository.findOneOrFail({
+        where: { manager: { id: managerId } }
+      });
+    } catch {
+      throw new BadRequestException();
+    }
+  }
+
+  async findAll(): Promise<Cashbox[]> {
     const data = await this.cashboxesRepository.find({
       relations: ['manager']
     });
-    return { data };
+    return data;
   }
 
-  async findOne(id: string): Promise<{ data: Cashbox }> {
+  async findOne(id: string): Promise<Cashbox> {
     try {
-      const data = await this.cashboxesRepository.findOneOrFail({ where: { id } });
-      return { data };
+      return await this.cashboxesRepository.findOneOrFail({
+        where: { id }
+      });
     } catch {
       throw new BadRequestException();
     }
   }
 
-  async updateBalance(id: string, balance: number): Promise<{ data: Cashbox }> {
+  async updateBalance(id: string, balance: number): Promise<Cashbox> {
     try {
       await this.cashboxesRepository.update(id, { balance });
-      const { data } = await this.findOne(id);
-      return { data };
+      return await this.findOne(id);
     } catch {
       throw new BadRequestException();
     }
   }
 
-  async update(id: string, dto: UpdateCashboxDto): Promise<{ data: Cashbox }> {
+  async update(id: string, dto: UpdateCashboxDto): Promise<Cashbox> {
     try {
-      const { data: cashbox } = await this.findOne(id);
+      const cashbox = await this.findOne(id);
       await this.cashboxesRepository.save({
         ...cashbox,
         ...dto,
         manager: { id: dto.manager }
       });
       const data = await this.cashboxesRepository.findOneOrFail({ where: { id } });
-      return { data };
+      return data;
     } catch {
       throw new BadRequestException();
     }

@@ -19,7 +19,7 @@ export class AuthController {
   @Post('sign-in')
   @UseGuards(LocalAuthGuard)
   @Authorization(RoleEnum.Guest)
-  singIn(@Req() req: Request): Promise<{ data: Express.User }> {
+  singIn(@Req() req: Request): Promise<Express.User> {
     return this.authService.signIn(req);
   }
 
@@ -29,18 +29,18 @@ export class AuthController {
   }
 
   @Get('profile')
-  profile(@CurrentUser() user: User): Promise<{ data: User }> {
+  profile(@CurrentUser() user: User): Promise<User> {
     return this.authService.profile(user);
   }
 
   @Patch('profile')
-  updateProfile(@CurrentUser() currentUser: User, @Body() data: UpdateProfileDto): Promise<{ data: User }> {
+  updateProfile(@CurrentUser() currentUser: User, @Body() data: UpdateProfileDto): Promise<User> {
     return this.authService.updateProfile(currentUser, data);
   }
 
   @Patch('update-password')
   @Authorization(RoleEnum.User)
-  updatePassword(@CurrentUser() user: User, @Body() dto: UpdatePasswordDto): Promise<{ data: User }> {
+  updatePassword(@CurrentUser() user: User, @Body() dto: UpdatePasswordDto): Promise<User> {
     return this.authService.updatePassword(user, dto);
   }
 
@@ -52,7 +52,7 @@ export class AuthController {
 
   @Post('reset-password')
   @Authorization(RoleEnum.Guest)
-  resetPassword(@Body() dto: ResetPasswordDto): Promise<{ data: User }> {
+  resetPassword(@Body() dto: ResetPasswordDto): Promise<User> {
     return this.authService.resetPassword(dto);
   }
 }

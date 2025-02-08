@@ -9,7 +9,7 @@ export class CreateTransactionDto {
   type: TransactionTypeEnum;
 
   @IsString()
-  from: string;
+  label: string;
 
   @IsString()
   to: string;

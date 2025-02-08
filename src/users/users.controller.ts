@@ -16,22 +16,22 @@ export class UsersController {
   constructor(private userService: UsersService) {}
 
   @Post('')
-  create(@Body() dto: CreateUserDto): Promise<{ data: User }> {
+  create(@Body() dto: CreateUserDto): Promise<User> {
     return this.userService.create(dto);
   }
 
   @Get('')
-  findAll(): Promise<{ data: User[] }> {
+  findAll(): Promise<User[]> {
     return this.userService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<{ data: User }> {
+  findOne(@Param('id') id: string): Promise<User> {
     return this.userService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<{ data: User }> {
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
     return this.userService.update(id, updateUserDto);
   }
 
@@ -47,7 +47,7 @@ export class UsersController {
       })
     })
   )
-  uploadImage(@CurrentUser() user: User, @UploadedFile() file: Express.Multer.File): Promise<{ data: User }> {
+  uploadImage(@CurrentUser() user: User, @UploadedFile() file: Express.Multer.File): Promise<User> {
     return this.userService.uploadImage(user, file);
   }
 

@@ -1,7 +1,7 @@
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { forgotPasswordDto } from './dto/forgot-password.dto';
-import { BadRequestException, Injectable, Req } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Req } from '@nestjs/common';
 import UpdateProfileDto from './dto/update-profile.dto';
 import * as bcrypt from 'bcrypt';
 import { Request } from 'express';
@@ -22,38 +22,36 @@ export class AuthService {
     private configService: ConfigService
   ) {}
 
-  async validateUser(email: string, password: string): Promise<{ data: User }> {
+  async validateUser(email: string, password: string): Promise<User> {
     try {
-      const { data } = await this.usersService.findByEmail(email);
-      await this.verifyPassword(password, data.password);
-      return { data };
+      const user = await this.usersService.findByEmail(email);
+      await this.verifyPassword(password, user.password);
+      return user;
     } catch {
       throw new BadRequestException('Les identifiants saisis sont invalides');
     }
   }
 
-  async signIn(@Req() req: Request): Promise<{ data: Express.User }> {
-    const data: Express.User = req.user;
-    return { data };
+  async signIn(@Req() req: Request): Promise<Express.User> {
+    return req.user;
   }
 
   async signOut(@Req() request: Request): Promise<void> {
     request.session.destroy(() => {});
   }
 
-  async verifyToken(token: string): Promise<{ data: User }> {
+  async verifyToken(token: string): Promise<User> {
     try {
       const payload = await this.jwtService.verifyAsync(token, { secret: this._jwtSecret });
-      const { data } = await this.usersService.findOne(payload.sub);
-      return { data };
+      return await this.usersService.findOne(payload.sub);
     } catch {
-      throw new BadRequestException('Token invalide');
+      throw new BadRequestException();
     }
   }
 
   async verifyPassword(password: string, encrypted: string): Promise<boolean> {
     const isMatch = await bcrypt.compare(password, encrypted);
-    if (!isMatch) throw new BadRequestException('Les mot de passe ne correspondent pas');
+    if (!isMatch) throw new BadRequestException();
     return isMatch;
   }
 
@@ -62,24 +60,22 @@ export class AuthService {
     return this.jwtService.signAsync(payload, { secret: this._jwtSecret, expiresIn });
   }
 
-  async profile(user: User): Promise<{ data: User }> {
+  async profile(user: User): Promise<User> {
     try {
-      const { data } = await this.usersService.findByEmail(user.email);
-      return { data };
+      return await this.usersService.findByEmail(user.email);
     } catch {
-      throw new BadRequestException('Erreur lors de la récupération du profil');
+      throw new BadRequestException();
     }
   }
 
-  async updateProfile(user: User, dto: UpdateProfileDto): Promise<{ data: User }> {
+  async updateProfile(user: User, dto: UpdateProfileDto): Promise<User> {
     return await this.usersService.updateProfile(user, dto);
   }
 
-  async updatePassword(user: User, dto: UpdatePasswordDto): Promise<{ data: User }> {
+  async updatePassword(user: User, dto: UpdatePasswordDto): Promise<User> {
     try {
       await this.usersService.updatePassword(user.id, dto.password);
-      const { data } = await this.usersService.findByEmail(user.email);
-      return { data };
+      return await this.usersService.findByEmail(user.email);
     } catch {
       throw new BadRequestException('Erreur lors de la mise à jour du mot de passe');
     }
@@ -87,24 +83,23 @@ export class AuthService {
 
   async forgotPassword(dto: forgotPasswordDto): Promise<void> {
     try {
-      const { data: user } = await this.usersService.findByEmail(dto.email);
+      const user = await this.usersService.findByEmail(dto.email);
       const token = await this.generateToken(user, '15min');
       const link = this.configService.get('FRONTEND_URI') + 'reset-password?token=' + token;
       this.eventEmitter.emit('user.reset-password', { user, link });
     } catch {
-      throw new BadRequestException('Aucun utilisateur trouvé avec cet email');
+      throw new NotFoundException();
     }
   }
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ data: User }> {
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<User> {
     const { token, password } = resetPasswordDto;
     try {
       await this.verifyToken(token);
       const payload = await this.jwtService.verifyAsync(token, { secret: this._jwtSecret });
-      const { data } = await this.usersService.updatePassword(payload.sub, password);
-      return { data };
+      return await this.usersService.updatePassword(payload.sub, password);
     } catch {
-      throw new BadRequestException('Le lien de réinitialisation du mot de passe est invalide');
+      throw new BadRequestException();
     }
   }
 }

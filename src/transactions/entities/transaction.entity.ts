@@ -12,11 +12,14 @@ export class Transaction extends AbstractEntity {
   @Column({ type: 'enum', enum: TransactionTypeEnum })
   type: TransactionTypeEnum;
 
-  @ManyToOne(() => Cashbox)
+  @Column({ type: 'text', nullable: true })
+  label: string;
+
+  @ManyToOne(() => Cashbox, (cashbox) => cashbox.receivedTransactions)
   @JoinColumn()
   from: Cashbox;
 
-  @ManyToOne(() => Cashbox)
+  @ManyToOne(() => Cashbox, (cashbox) => cashbox.madeTransactions)
   @JoinColumn()
   to: Cashbox;
 

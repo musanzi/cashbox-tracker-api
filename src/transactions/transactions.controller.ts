@@ -15,22 +15,22 @@ export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
   @Post()
-  create(@CurrentUser() user: User, @Body() dto: CreateTransactionDto): Promise<{ data: Transaction }> {
+  create(@CurrentUser() user: User, @Body() dto: CreateTransactionDto): Promise<Transaction> {
     return this.transactionsService.create(user, dto);
   }
 
   @Get()
-  findAll(@Query() queryParams: QueryParams): Promise<{ data: [Transaction[], number] }> {
+  findAll(@Query() queryParams: QueryParams): Promise<[Transaction[], number]> {
     return this.transactionsService.findAll(queryParams);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string): Promise<{ data: Transaction }> {
-    return this.transactionsService.findOne(id);
+  @Get('by-manager')
+  findByManager(@CurrentUser() user: User, @Query() queryParams: QueryParams): Promise<[Transaction[], number]> {
+    return this.transactionsService.findByManager(user, queryParams);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateTransactionDto): Promise<{ data: Transaction }> {
+  update(@Param('id') id: string, @Body() dto: UpdateTransactionDto): Promise<Transaction> {
     return this.transactionsService.update(id, dto);
   }
 

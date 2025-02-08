@@ -52,6 +52,7 @@ export default class UserSeeder implements Seeder {
 
             return await dataSource.getRepository(Transaction).save({
               amount: +faker.finance.amount(),
+              label: faker.lorem.paragraph(),
               from: { id: fromCashbox.id },
               type: faker.helpers.arrayElement(types),
               to: { id: toCashbox.id },
@@ -76,7 +77,7 @@ export default class UserSeeder implements Seeder {
 
     await userRepository.save({
       name: 'Wilfried Musanzi',
-      phone_number: faker.phone.number({ style: 'human' }),
+      phone_number: '+243979265726',
       email: 'admin@admin.com',
       password: await bcrypt.hash('admin', 10),
       role: RoleEnum.Admin

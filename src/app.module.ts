@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { resolve } from 'path';
 import { JwtModule } from '@nestjs/jwt';
@@ -12,8 +12,8 @@ import { UsersModule } from './users/users.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { CashboxesModule } from './cashboxes/cashboxes.module';
 import { TransactionsModule } from './transactions/transactions.module';
-import { ReportsModule } from './reports/reports.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TransformInterceptor } from './shared/interceptors/transform.interceptor';
 
 @Module({
   imports: [
@@ -55,9 +55,11 @@ import { ScheduleModule } from '@nestjs/schedule';
     UsersModule,
     DatabaseModule,
     CashboxesModule,
-    TransactionsModule,
-    ReportsModule
+    TransactionsModule
   ],
-  providers: [{ provide: APP_GUARD, useClass: AuthorizationGuard }]
+  providers: [
+    { provide: APP_GUARD, useClass: AuthorizationGuard },
+    { provide: APP_INTERCEPTOR, useClass: TransformInterceptor }
+  ]
 })
 export class AppModule {}
