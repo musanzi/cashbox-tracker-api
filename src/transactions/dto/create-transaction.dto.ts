@@ -1,12 +1,12 @@
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { TransactionTypeEnum } from '../utils/type.enum';
+import { TransactionCategory } from '../utils/categories.enum';
 
 export class CreateTransactionDto {
   @IsNotEmpty()
   amount: number;
 
-  @IsEnum(TransactionTypeEnum)
-  type: TransactionTypeEnum;
+  @IsEnum(TransactionCategory)
+  category: TransactionCategory;
 
   @IsString()
   label: string;

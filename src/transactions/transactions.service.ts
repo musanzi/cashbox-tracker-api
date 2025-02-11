@@ -18,11 +18,8 @@ export class TransactionsService {
 
   async create(user: User, dto: CreateTransactionDto): Promise<Transaction> {
     try {
-      const from = await this.cashBoxsService.getCashBoxByManager(user.id);
       const data = await this.transactionsRepository.save({
         ...dto,
-        from,
-        to: { id: dto.to },
         by: { id: user.id }
       });
       return data;
@@ -31,31 +28,35 @@ export class TransactionsService {
     }
   }
 
-  async findByManager(manager: User, queryParams: QueryParams): Promise<[Transaction[], number]> {
+  async findAll(queryParams: QueryParams): Promise<[Transaction[], number]> {
+    const { page = 1, cashbox, date = new Date() } = queryParams;
+    const take = 30;
+    const skip = (page - 1) * take;
+    const query = this.transactionsRepository
+      .createQueryBuilder('t')
+      .leftJoinAndSelect('t.by', 'by')
+      .leftJoinAndSelect('t.cashbox', 'cashbox')
+      .where('t.created_at >= :date', { date: date.setHours(0, 0, 0, 0) })
+      .orderBy('t.created_at', 'DESC');
+    if (cashbox) query.andWhere('cashbox.id = :id', { id: cashbox });
+    return await query.skip(skip).take(take).getManyAndCount();
+  }
+
+  async findForCashier(user: User, queryParams: QueryParams): Promise<[Transaction[], number]> {
     const { page = 1, date = new Date() } = queryParams;
     const take = 12;
     const skip = (page - 1) * take;
-    const from = await this.cashBoxsService.getCashBoxByManager(manager.id);
-    return await this.transactionsRepository.findAndCount({
-      take,
-      skip,
-      where: { created_at: new Date(date), from },
-      relations: ['from', 'to', 'by'],
-      order: { created_at: 'DESC' }
-    });
-  }
-
-  async findAll(queryParams: QueryParams): Promise<[Transaction[], number]> {
-    const { page = 1, date } = queryParams;
-    const take = 12;
-    const skip = (page - 1) * take;
-    return await this.transactionsRepository.findAndCount({
-      take,
-      skip,
-      relations: ['from', 'to', 'by'],
-      where: { created_at: new Date(date) },
-      order: { created_at: 'DESC' }
-    });
+    return await this.transactionsRepository
+      .createQueryBuilder('t')
+      .leftJoinAndSelect('t.by', 'by')
+      .leftJoinAndSelect('t.cashbox', 'cashbox')
+      .leftJoinAndSelect('cashbox.manager', 'manager')
+      .where('t.created_at >= :date', { date: date.setHours(0, 0, 0, 0) })
+      .andWhere('manager.id = :id', { id: user.id })
+      .skip(skip)
+      .take(take)
+      .orderBy('t.created_at', 'DESC')
+      .getManyAndCount();
   }
 
   async findOne(id: string): Promise<Transaction> {

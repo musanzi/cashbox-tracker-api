@@ -24,16 +24,6 @@ export class CashboxesService {
     }
   }
 
-  async getCashBoxByManager(managerId: string): Promise<Cashbox> {
-    try {
-      return await this.cashboxesRepository.findOneOrFail({
-        where: { manager: { id: managerId } }
-      });
-    } catch {
-      throw new BadRequestException();
-    }
-  }
-
   async findAll(): Promise<Cashbox[]> {
     const data = await this.cashboxesRepository.find({
       relations: ['manager']

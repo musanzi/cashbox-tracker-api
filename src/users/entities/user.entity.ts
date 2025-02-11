@@ -2,7 +2,6 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { AbstractEntity } from '../../shared/utils/abstract.entity';
 import { RoleEnum } from '../../shared/enums/roles.enum';
 import { Cashbox } from '../../cashboxes/entities/cashbox.entity';
-import { Transaction } from '../../transactions/entities/transaction.entity';
 
 @Entity()
 export class User extends AbstractEntity {
@@ -26,7 +25,4 @@ export class User extends AbstractEntity {
 
   @OneToMany(() => Cashbox, (cashbox) => cashbox.manager)
   cashboxes: Cashbox[];
-
-  @OneToMany(() => Transaction, (transaction) => transaction.by)
-  transactions: Transaction[];
 }

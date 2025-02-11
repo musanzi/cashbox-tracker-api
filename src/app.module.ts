@@ -14,6 +14,7 @@ import { CashboxesModule } from './cashboxes/cashboxes.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TransformInterceptor } from './shared/interceptors/transform.interceptor';
+import { TransfersModule } from './transfers/transfers.module';
 
 @Module({
   imports: [
@@ -55,7 +56,8 @@ import { TransformInterceptor } from './shared/interceptors/transform.intercepto
     UsersModule,
     DatabaseModule,
     CashboxesModule,
-    TransactionsModule
+    TransactionsModule,
+    TransfersModule
   ],
   providers: [
     { provide: APP_GUARD, useClass: AuthorizationGuard },
