@@ -23,6 +23,6 @@ export class User extends AbstractEntity {
   @Column({ nullable: true })
   profile: string;
 
-  @OneToMany(() => Cashbox, (cashbox) => cashbox.manager)
+  @OneToMany(() => Cashbox, (cashbox) => cashbox.cashier)
   cashboxes: Cashbox[];
 }

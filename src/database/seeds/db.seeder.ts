@@ -107,7 +107,7 @@ export default class UserSeeder implements Seeder {
           return await cashboxRepository.save({
             name: faker.company.name(),
             balance: +faker.finance.amount(),
-            manager: { id: user.id }
+            cashier: { id: user.id }
           });
         })
       );

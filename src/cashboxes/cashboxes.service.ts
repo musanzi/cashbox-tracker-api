@@ -16,7 +16,7 @@ export class CashboxesService {
     try {
       const data = await this.cashboxesRepository.save({
         ...dto,
-        manager: { id: dto.manager }
+        cashier: { id: dto.cashier }
       });
       return data;
     } catch {
@@ -26,7 +26,7 @@ export class CashboxesService {
 
   async findAll(): Promise<Cashbox[]> {
     const data = await this.cashboxesRepository.find({
-      relations: ['manager']
+      relations: ['cashier']
     });
     return data;
   }
@@ -34,7 +34,8 @@ export class CashboxesService {
   async findOne(id: string): Promise<Cashbox> {
     try {
       return await this.cashboxesRepository.findOneOrFail({
-        where: { id }
+        where: { id },
+        relations: ['cashier']
       });
     } catch {
       throw new BadRequestException();
@@ -56,7 +57,7 @@ export class CashboxesService {
       await this.cashboxesRepository.save({
         ...cashbox,
         ...dto,
-        manager: { id: dto.manager }
+        cashier: { id: dto.cashier }
       });
       const data = await this.cashboxesRepository.findOneOrFail({ where: { id } });
       return data;

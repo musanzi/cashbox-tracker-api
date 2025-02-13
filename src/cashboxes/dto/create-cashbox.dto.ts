@@ -1,9 +1,12 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateCashboxDto {
   @IsNotEmpty()
   name: string;
 
+  @IsOptional()
+  balance: number;
+
   @IsNotEmpty()
-  manager: string;
+  cashier: string;
 }

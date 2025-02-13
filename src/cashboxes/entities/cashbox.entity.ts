@@ -12,5 +12,5 @@ export class Cashbox extends AbstractEntity {
 
   @ManyToOne(() => User, (user) => user.cashboxes)
   @JoinColumn()
-  manager: User;
+  cashier: User;
 }
