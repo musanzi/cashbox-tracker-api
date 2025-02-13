@@ -25,6 +25,11 @@ export class UsersController {
     return this.userService.findAll();
   }
 
+  @Get('cashiers')
+  findCashiers(): Promise<User[]> {
+    return this.userService.findCashiers();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string): Promise<User> {
     return this.userService.findOne(id);

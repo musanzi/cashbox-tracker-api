@@ -25,9 +25,16 @@ export class UsersService {
     }
   }
 
+  async findCashiers(): Promise<User[]> {
+    return await this.usersRepository.find({
+      where: { role: RoleEnum.Cashier }
+    });
+  }
+
   async findAll(): Promise<User[]> {
-    const data = await this.usersRepository.find({});
-    return data;
+    return await this.usersRepository.find({
+      order: { created_at: 'DESC' }
+    });
   }
 
   async findManagers(): Promise<User[]> {
