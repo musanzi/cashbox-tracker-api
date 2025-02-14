@@ -26,6 +26,7 @@ export class CashboxesService {
 
   async findAll(): Promise<Cashbox[]> {
     const data = await this.cashboxesRepository.find({
+      order: { updated_at: 'DESC' },
       relations: ['cashier']
     });
     return data;
