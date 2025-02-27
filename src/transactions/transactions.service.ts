@@ -46,7 +46,8 @@ export class TransactionsService {
   async findOne(id: string): Promise<Transaction> {
     try {
       return await this.transactionsRepository.findOneOrFail({
-        where: { id }
+        where: { id },
+        relations: ['cashbox']
       });
     } catch {
       throw new BadRequestException();
