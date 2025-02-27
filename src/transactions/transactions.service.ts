@@ -20,6 +20,7 @@ export class TransactionsService {
     try {
       const data = await this.transactionsRepository.save({
         ...dto,
+        cashbox: { id: dto.cashbox },
         by: { id: user.id }
       });
       return data;
@@ -42,23 +43,6 @@ export class TransactionsService {
     return await query.skip(skip).take(take).getManyAndCount();
   }
 
-  async findForCashier(user: User, queryParams: QueryParams): Promise<[Transaction[], number]> {
-    const { page = 1, date = new Date() } = queryParams;
-    const take = 12;
-    const skip = (page - 1) * take;
-    return await this.transactionsRepository
-      .createQueryBuilder('t')
-      .leftJoinAndSelect('t.by', 'by')
-      .leftJoinAndSelect('t.cashbox', 'cashbox')
-      .leftJoinAndSelect('cashbox.manager', 'manager')
-      .where('t.created_at >= :date', { date: date.setHours(0, 0, 0, 0) })
-      .andWhere('manager.id = :id', { id: user.id })
-      .skip(skip)
-      .take(take)
-      .orderBy('t.created_at', 'DESC')
-      .getManyAndCount();
-  }
-
   async findOne(id: string): Promise<Transaction> {
     try {
       return await this.transactionsRepository.findOneOrFail({
@@ -75,7 +59,7 @@ export class TransactionsService {
       return await this.transactionsRepository.save({
         ...transaction,
         ...dto,
-        to: { id: dto.to }
+        cashbox: { id: dto.cashbox }
       });
     } catch {
       throw new BadRequestException();

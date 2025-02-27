@@ -24,11 +24,6 @@ export class TransactionsController {
     return this.transactionsService.findAll(queryParams);
   }
 
-  @Get('for-cashier')
-  findForCashier(@CurrentUser() user: User, @Query() queryParams: QueryParams): Promise<[Transaction[], number]> {
-    return this.transactionsService.findForCashier(user, queryParams);
-  }
-
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateTransactionDto): Promise<Transaction> {
     return this.transactionsService.update(id, dto);

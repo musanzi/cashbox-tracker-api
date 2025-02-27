@@ -12,5 +12,5 @@ export class CreateTransactionDto {
   label: string;
 
   @IsString()
-  to: string;
+  cashbox: string;
 }
