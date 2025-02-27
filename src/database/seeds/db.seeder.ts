@@ -60,17 +60,12 @@ export default class UserSeeder implements Seeder {
         Array(count)
           .fill(0)
           .map(async () => {
-            const fromCashbox = faker.helpers.arrayElement(cashboxes);
-            let toCashbox = faker.helpers.arrayElement(cashboxes);
-            // Ensure fromCashbox and toCashbox are not the same
-            while (toCashbox.id === fromCashbox.id) {
-              toCashbox = faker.helpers.arrayElement(cashboxes);
-            }
+            const toCashbox = faker.helpers.arrayElement(cashboxes);
             return await dataSource.getRepository(Transaction).save({
               amount: +faker.finance.amount(),
               label: faker.lorem.paragraph(),
               category: faker.helpers.arrayElement(categories),
-              cashbox: { id: toCashbox.id },
+              cashbox: toCashbox,
               by: faker.helpers.arrayElement(cashiers),
               created_at: faker.date.recent()
             });
