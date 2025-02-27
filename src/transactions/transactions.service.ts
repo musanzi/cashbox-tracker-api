@@ -38,7 +38,7 @@ export class TransactionsService {
       .leftJoinAndSelect('t.by', 'by')
       .leftJoinAndSelect('t.cashbox', 'cashbox')
       .where('t.created_at >= :date', { date: date.setHours(0, 0, 0, 0) })
-      .orderBy('t.created_at', 'DESC');
+      .orderBy('t.updated_at', 'DESC');
     if (cashbox) query.andWhere('cashbox.id = :id', { id: cashbox });
     return await query.skip(skip).take(take).getManyAndCount();
   }
