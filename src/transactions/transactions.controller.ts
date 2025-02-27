@@ -24,6 +24,11 @@ export class TransactionsController {
     return this.transactionsService.findAll(queryParams);
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string): Promise<Transaction> {
+    return this.transactionsService.findOne(id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateTransactionDto): Promise<Transaction> {
     return this.transactionsService.update(id, dto);
