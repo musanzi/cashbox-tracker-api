@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { CashboxesService } from '../cashboxes/cashboxes.service';
 import { User } from '../users/entities/user.entity';
 import { QueryParams } from './utils/query-params.type';
+import { endOfDay, startOfDay } from 'date-fns';
 
 @Injectable()
 export class TransactionsService {
@@ -30,17 +31,19 @@ export class TransactionsService {
   }
 
   async findAll(queryParams: QueryParams): Promise<[Transaction[], number]> {
-    const { page = 1, cashbox, date = new Date() } = queryParams;
+    const { page = 1, cashbox, category, from = new Date(), to } = queryParams;
     const take = 30;
     const skip = (page - 1) * take;
+    const startDate = startOfDay(from);
+    const endDate = endOfDay(to);
     const query = this.transactionsRepository
       .createQueryBuilder('t')
       .leftJoinAndSelect('t.by', 'by')
-      .leftJoinAndSelect('t.cashbox', 'cashbox')
-      .where('t.created_at >= :date', { date: date.setHours(0, 0, 0, 0) })
-      .orderBy('t.updated_at', 'DESC');
+      .leftJoinAndSelect('t.cashbox', 'cashbox');
+    if (to) query.andWhere('t.created_at BETWEEN :startDate AND :endDate', { startDate, endDate });
     if (cashbox) query.andWhere('cashbox.id = :id', { id: cashbox });
-    return await query.skip(skip).take(take).getManyAndCount();
+    if (category) query.andWhere('t.category = :category', { category });
+    return await query.skip(skip).take(take).orderBy('t.updated_at', 'DESC').getManyAndCount();
   }
 
   async findOne(id: string): Promise<Transaction> {
