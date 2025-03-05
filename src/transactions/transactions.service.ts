@@ -31,7 +31,7 @@ export class TransactionsService {
   }
 
   async findAll(queryParams: QueryParams): Promise<[Transaction[], number]> {
-    const { page = 1, cashbox, category, from = new Date(), to } = queryParams;
+    const { page = 1, cashbox, category, from, to } = queryParams;
     const take = 30;
     const skip = (page - 1) * take;
     const startDate = startOfDay(from);
@@ -40,7 +40,8 @@ export class TransactionsService {
       .createQueryBuilder('t')
       .leftJoinAndSelect('t.by', 'by')
       .leftJoinAndSelect('t.cashbox', 'cashbox');
-    if (to) query.andWhere('t.created_at BETWEEN :startDate AND :endDate', { startDate, endDate });
+    if (from) query.andWhere('t.created_at >= :startDate', { startDate });
+    if (to) query.andWhere('t.created_at >= :startDate AND t.created_at <= :endDate', { startDate, endDate });
     if (cashbox) query.andWhere('cashbox.id = :id', { id: cashbox });
     if (category) query.andWhere('t.category = :category', { category });
     return await query.skip(skip).take(take).orderBy('t.updated_at', 'DESC').getManyAndCount();
