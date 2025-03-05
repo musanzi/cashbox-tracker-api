@@ -75,11 +75,6 @@ export default class UserSeeder implements Seeder {
 
     async function createTransfers(count: number, cashiers: User[]) {
       const cashboxes = await cashboxRepository.find();
-      const fromCashbox = faker.helpers.arrayElement(cashboxes);
-      let toCashbox = faker.helpers.arrayElement(cashboxes);
-      while (toCashbox.id === fromCashbox.id) {
-        toCashbox = faker.helpers.arrayElement(cashboxes);
-      }
       return Promise.all(
         Array(count)
           .fill(0)
@@ -87,8 +82,8 @@ export default class UserSeeder implements Seeder {
             return await dataSource.getRepository(Transfer).save({
               amount: +faker.finance.amount(),
               label: faker.lorem.paragraph(),
-              from_cashbox: fromCashbox,
-              to_cashbox: toCashbox,
+              from_cashbox: faker.helpers.arrayElement(cashboxes),
+              to_cashbox: faker.helpers.arrayElement(cashboxes),
               by: faker.helpers.arrayElement(cashiers),
               created_at: faker.date.recent()
             });
