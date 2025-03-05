@@ -7,6 +7,7 @@ import CreateUserDto from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { RoleEnum } from '../shared/enums/roles.enum';
+import { QueryParams } from './utils/query-params.type';
 
 @Injectable()
 export class UsersService {
@@ -31,10 +32,13 @@ export class UsersService {
     });
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.usersRepository.find({
-      order: { created_at: 'DESC' }
-    });
+  async findAll(queryParams: QueryParams): Promise<[User[], number]> {
+    const { page = 1, role } = queryParams;
+    const take = 12;
+    const skip = (page - 1) * take;
+    const query = this.usersRepository.createQueryBuilder('u');
+    if (role) query.andWhere('u.role = :role', { role });
+    return await query.skip(skip).take(take).orderBy('t.updated_at', 'DESC').getManyAndCount();
   }
 
   async findManagers(): Promise<User[]> {

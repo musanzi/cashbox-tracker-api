@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UploadedFile,
+  UseInterceptors
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
@@ -9,6 +20,7 @@ import CreateUserDto from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
+import { QueryParams } from './utils/query-params.type';
 
 @Controller('users')
 @Authorization(RoleEnum.Manager)
@@ -21,8 +33,8 @@ export class UsersController {
   }
 
   @Get('')
-  findAll(): Promise<User[]> {
-    return this.userService.findAll();
+  findAll(@Query() queryParams: QueryParams): Promise<[User[], number]> {
+    return this.userService.findAll(queryParams);
   }
 
   @Get('cashiers')
