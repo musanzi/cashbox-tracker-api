@@ -38,7 +38,7 @@ export class UsersService {
     const skip = (page - 1) * take;
     const query = this.usersRepository.createQueryBuilder('u');
     if (role) query.andWhere('u.role = :role', { role });
-    return await query.skip(skip).take(take).orderBy('t.updated_at', 'DESC').getManyAndCount();
+    return await query.skip(skip).take(take).orderBy('u.updated_at', 'DESC').getManyAndCount();
   }
 
   async findManagers(): Promise<User[]> {
