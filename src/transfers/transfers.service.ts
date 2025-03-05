@@ -18,8 +18,8 @@ export class TransfersService {
     try {
       return await this.transferRepository.save({
         ...dto,
-        from_cashbox: { id: dto.from_cashbox },
-        to_cashbox: { id: dto.to_cashbox },
+        from_cashbox: { id: dto.from },
+        to_cashbox: { id: dto.to },
         by: user
       });
     } catch {
@@ -42,25 +42,12 @@ export class TransfersService {
     return await query.skip(skip).take(take).orderBy('t.created_at', 'DESC').getManyAndCount();
   }
 
-  async findForCashier(user: User, queryParams: QueryParams): Promise<[Transfer[], number]> {
-    const { page = 1, to_cashbox, date = new Date() } = queryParams;
-    const take = 30;
-    const skip = (page - 1) * take;
-    const query = this.transferRepository
-      .createQueryBuilder('t')
-      .leftJoinAndSelect('t.by', 'by')
-      .leftJoinAndSelect('t.to_cashbox', 'toCashbox')
-      .leftJoinAndSelect('t.from_cashbox', 'fromCashbox')
-      .leftJoinAndSelect('fromCashbox.manager', 'manager')
-      .where('t.created_at >= :date', { date: date.setHours(0, 0, 0, 0) })
-      .andWhere('manager.id = :id', { id: user.id });
-    if (to_cashbox) query.andWhere('toCashbox.id = :to_cashbox', { to_cashbox });
-    return await query.skip(skip).take(take).orderBy('t.created_at', 'DESC').getManyAndCount();
-  }
-
   async findOne(id: string): Promise<Transfer> {
     try {
-      return await this.transferRepository.findOneByOrFail({ id });
+      return await this.transferRepository.findOneOrFail({
+        where: { id },
+        relations: ['by', 'from_cashbox', 'to_cashbox']
+      });
     } catch {
       throw new NotFoundException();
     }
@@ -72,8 +59,8 @@ export class TransfersService {
       return await this.transferRepository.save({
         ...transfer,
         ...dto,
-        from_cashbox: { id: dto.from_cashbox },
-        to_cashbox: { id: dto.to_cashbox }
+        from_cashbox: { id: dto.from },
+        to_cashbox: { id: dto.to }
       });
     } catch {
       throw new BadRequestException();

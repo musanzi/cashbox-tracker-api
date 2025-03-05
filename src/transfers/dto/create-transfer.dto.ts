@@ -8,8 +8,8 @@ export class CreateTransferDto {
   label: string;
 
   @IsNotEmpty()
-  from_cashbox: string;
+  from: string;
 
   @IsNotEmpty()
-  to_cashbox: string;
+  to: string;
 }

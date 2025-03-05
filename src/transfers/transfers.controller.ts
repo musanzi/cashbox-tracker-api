@@ -24,11 +24,6 @@ export class TransfersController {
     return this.transfersService.findAll(queryParams);
   }
 
-  @Get('for-cashier')
-  findForCashier(@CurrentUser() user: User, @Query() queryParams: QueryParams): Promise<[Transfer[], number]> {
-    return this.transfersService.findForCashier(user, queryParams);
-  }
-
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Transfer> {
     return this.transfersService.findOne(id);
