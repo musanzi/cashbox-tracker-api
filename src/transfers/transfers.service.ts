@@ -6,6 +6,7 @@ import { Transfer } from './entities/transfer.entity';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { QueryParams } from './utils/query-params.type';
+import { startOfDay, endOfDay } from 'date-fns';
 
 @Injectable()
 export class TransfersService {
@@ -28,15 +29,18 @@ export class TransfersService {
   }
 
   async findAll(queryParams: QueryParams): Promise<[Transfer[], number]> {
-    const { page = 1, from_cashbox, to_cashbox, date = new Date() } = queryParams;
+    const { page = 1, from_cashbox, to_cashbox, from, to } = queryParams;
     const take = 30;
     const skip = (page - 1) * take;
+    const startDate = startOfDay(from);
+    const endDate = endOfDay(to);
     const query = this.transferRepository
       .createQueryBuilder('t')
       .leftJoinAndSelect('t.by', 'by')
       .leftJoinAndSelect('t.from_cashbox', 'fromCashbox')
-      .leftJoinAndSelect('t.to_cashbox', 'toCashbox')
-      .andWhere('t.created_at >= :date', { date: date.setHours(0, 0, 0, 0) });
+      .leftJoinAndSelect('t.to_cashbox', 'toCashbox');
+    if (from) query.andWhere('t.created_at >= :startDate', { startDate });
+    if (to) query.andWhere('t.created_at >= :startDate AND t.created_at <= :endDate', { startDate, endDate });
     if (from_cashbox) query.andWhere('fromCashbox.id = :id', { id: from_cashbox });
     if (to_cashbox) query.andWhere('toCashbox.id = :id', { id: to_cashbox });
     return await query.skip(skip).take(take).orderBy('t.created_at', 'DESC').getManyAndCount();

@@ -1,6 +1,7 @@
 export interface QueryParams {
   page: number | null;
-  date: Date | null;
+  from: Date | null;
+  to: Date | null;
   from_cashbox: string | null;
   to_cashbox: string | null;
 }
