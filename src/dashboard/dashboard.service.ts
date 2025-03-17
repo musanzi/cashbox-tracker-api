@@ -11,31 +11,25 @@ export class DashboardService {
   constructor(private dataSource: DataSource) {}
 
   async getDashboardData(): Promise<DashboardData> {
+    const chartData = (await this.dataSource.createQueryBuilder(Cashbox, 'c').getMany()).map((c) => ({
+      name: c.name,
+      value: +c.balance
+    }));
     const totalUsers = await this.dataSource.createQueryBuilder(User, 'u').getCount();
-    const totalCashboxes = await this.dataSource.createQueryBuilder(Cashbox, 'u').getCount();
-    const totalTransfersByMonth = await this.dataSource
-      .createQueryBuilder(Transfer, 't')
-      .select('SUM(t.amount)', 'total')
-      .addSelect('DATE_FORMAT(t.created_at, "%m")', 'month')
-      .groupBy('month')
-      .getRawMany();
-    const totalTransactionsByMonth = await this.dataSource
+    const totalTransactions = await this.dataSource
       .createQueryBuilder(Transaction, 't')
       .select('SUM(t.amount)', 'total')
-      .addSelect('DATE_FORMAT(t.created_at, "%m")', 'month')
-      .groupBy('month')
-      .getRawMany();
-    const availableBalance = await this.dataSource
-      .createQueryBuilder()
-      .select('SUM(c.balance)', 'availableBalance')
-      .from(Cashbox, 'c')
       .getRawOne();
-    return {
-      totalUsers,
-      totalCashboxes,
-      totalTransfersByMonth,
-      totalTransactionsByMonth,
-      availableBalance
-    };
+    const totalTransfers = await this.dataSource
+      .createQueryBuilder(Transfer, 't')
+      .select('SUM(t.amount)', 'total')
+      .getRawOne();
+    const summary = [
+      { name: 'Balance', value: chartData.reduce((acc, cur) => acc + cur.value, 0) },
+      { name: 'Transactions', value: +totalTransactions?.total || 0 },
+      { name: 'Transferts', value: +totalTransfers?.total || 0 },
+      { name: 'Utilisateurs', value: +totalUsers || 0 }
+    ];
+    return { chartData, summary };
   }
 }

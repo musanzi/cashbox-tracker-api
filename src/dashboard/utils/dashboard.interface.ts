@@ -1,12 +1,16 @@
-export interface MonthlyTotal {
-  total: string;
-  month: string;
+export interface ChartData {
+  name: string;
+  value: number;
+}
+
+export interface DashboardSummary {
+  totalBalance: number;
+  totalTransactions: number;
+  totalTransfers: number;
+  totalUsers: number;
 }
 
 export interface DashboardData {
-  totalUsers: number;
-  totalCashboxes: number;
-  totalTransfersByMonth: MonthlyTotal[];
-  totalTransactionsByMonth: MonthlyTotal[];
-  availableBalance: { availableBalance: string };
+  chartData: ChartData[];
+  summary: ChartData[];
 }
