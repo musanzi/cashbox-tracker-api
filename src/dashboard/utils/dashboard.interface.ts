@@ -5,5 +5,4 @@ export interface ChartData {
 
 export interface DashboardData {
   chartData: ChartData[];
-  summary: ChartData[];
 }
