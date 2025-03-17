@@ -3,13 +3,6 @@ export interface ChartData {
   value: number;
 }
 
-export interface DashboardSummary {
-  totalBalance: number;
-  totalTransactions: number;
-  totalTransfers: number;
-  totalUsers: number;
-}
-
 export interface DashboardData {
   chartData: ChartData[];
   summary: ChartData[];
